@@ -2,20 +2,20 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Data Penjualan</title>
+<title>Kasir Penjualan</title>
 <style>
 body {
     font-family: Arial;
     background: #f4f4f4;
     padding: 20px;
 }
-h2 {
-    text-align: center;
-}
+h2 { text-align: center; }
+
 table {
     width: 100%;
     background: white;
     border-collapse: collapse;
+    margin-top: 10px;
 }
 th, td {
     padding: 10px;
@@ -26,19 +26,26 @@ th {
     background: #4CAF50;
     color: white;
 }
+
 input {
     padding: 8px;
     margin: 5px;
 }
+
 button {
-    padding: 10px 15px;
+    padding: 8px 12px;
     background: green;
     color: white;
     border: none;
     cursor: pointer;
 }
-#grandTotal {
-    font-size: 20px;
+
+.deleteBtn {
+    background: red;
+}
+
+#grandTotal, #dailyReport {
+    font-size: 18px;
     margin-top: 15px;
     font-weight: bold;
 }
@@ -46,28 +53,36 @@ button {
 </head>
 <body>
 
-<h2>Data Penjualan</h2>
+<h2>Kasir Penjualan</h2>
 
-<table id="tabelJualan">
-<tr>
-    <th>Menu</th>
-    <th>Harga</th>
-    <th>Jumlah</th>
-    <th>Total</th>
-</tr>
-</table>
-
-<br>
-
-<input type="text" id="nama" placeholder="Menu">
+<input type="text" id="nama" placeholder="Nama Barang">
 <input type="number" id="harga" placeholder="Harga">
 <input type="number" id="jumlah" placeholder="Jumlah">
 <button onclick="tambahData()">Tambah</button>
 
+<table id="tabelJualan">
+<tr>
+    <th>Nama</th>
+    <th>Harga</th>
+    <th>Jumlah</th>
+    <th>Total</th>
+    <th>Aksi</th>
+</tr>
+</table>
+
 <div id="grandTotal">Total Semua: Rp 0</div>
+<div id="dailyReport">Laporan Hari Ini: Rp 0</div>
 
 <script>
-let totalSemua = 0;
+let data = JSON.parse(localStorage.getItem("dataJualan")) || [];
+
+window.onload = function() {
+    data.forEach((item, index) => {
+        renderRow(item, index);
+    });
+    updateTotal();
+    updateDailyReport();
+};
 
 function tambahData() {
     let nama = document.getElementById("nama").value;
@@ -80,21 +95,61 @@ function tambahData() {
     }
 
     let total = harga * jumlah;
-    totalSemua += total;
 
+    let item = {
+        nama,
+        harga,
+        jumlah,
+        total,
+        tanggal: new Date().toLocaleDateString()
+    };
+
+    data.push(item);
+    localStorage.setItem("dataJualan", JSON.stringify(data));
+
+    location.reload();
+}
+
+function renderRow(item, index) {
     let tabel = document.getElementById("tabelJualan");
     let row = tabel.insertRow();
 
-    row.insertCell(0).innerText = nama;
-    row.insertCell(1).innerText = harga;
-    row.insertCell(2).innerText = jumlah;
-    row.insertCell(3).innerText = total;
+    row.insertCell(0).innerText = item.nama;
+    row.insertCell(1).innerText = item.harga;
+    row.insertCell(2).innerText = item.jumlah;
+    row.insertCell(3).innerText = item.total;
 
-    document.getElementById("grandTotal").innerText = "Total Semua: Rp " + totalSemua;
+    let btn = document.createElement("button");
+    btn.innerText = "Hapus";
+    btn.className = "deleteBtn";
 
-    document.getElementById("nama").value = "";
-    document.getElementById("harga").value = "";
-    document.getElementById("jumlah").value = "";
+    btn.onclick = function() {
+        hapusData(index);
+    };
+
+    row.insertCell(4).appendChild(btn);
+}
+
+function hapusData(index) {
+    data.splice(index, 1);
+    localStorage.setItem("dataJualan", JSON.stringify(data));
+    location.reload();
+}
+
+function updateTotal() {
+    let total = data.reduce((sum, item) => sum + item.total, 0);
+    document.getElementById("grandTotal").innerText = "Total Semua: Rp " + total;
+}
+
+function updateDailyReport() {
+    let today = new Date().toLocaleDateString();
+
+    let totalHariIni = data
+        .filter(item => item.tanggal === today)
+        .reduce((sum, item) => sum + item.total, 0);
+
+    document.getElementById("dailyReport").innerText =
+        "Laporan Hari Ini: Rp " + totalHariIni;
 }
 </script>
 
