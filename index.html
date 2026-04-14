@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>SandiPlay</title>
+<title>Kasir Sandi</title>
 <style>
 body {
     font-family: Arial;
@@ -15,7 +15,6 @@ table {
     width: 100%;
     background: white;
     border-collapse: collapse;
-    margin-top: 10px;
 }
 th, td {
     padding: 10px;
@@ -27,7 +26,7 @@ th {
     color: white;
 }
 
-input {
+input, select {
     padding: 8px;
     margin: 5px;
 }
@@ -46,7 +45,7 @@ button {
 
 #grandTotal, #dailyReport {
     font-size: 18px;
-    margin-top: 15px;
+    margin-top: 10px;
     font-weight: bold;
 }
 </style>
@@ -56,13 +55,22 @@ button {
 <h2>PENJUALAN</h2>
 
 <input type="text" id="nama" placeholder="Menu">
-<input type="number" id="harga" placeholder="Harga">
+
+<select id="ukuran" onchange="setHarga()">
+    <option value="">Pilih Ukuran</option>
+    <option value="kecil">Kecil</option>
+    <option value="besar">Besar</option>
+</select>
+
+<input type="number" id="harga" placeholder="Harga" readonly>
 <input type="number" id="jumlah" placeholder="Jumlah">
+
 <button onclick="tambahData()">Tambah</button>
 
 <table id="tabelJualan">
 <tr>
     <th>Menu</th>
+    <th>Ukuran</th>
     <th>Harga</th>
     <th>Jumlah</th>
     <th>Total</th>
@@ -76,21 +84,30 @@ button {
 <script>
 let data = JSON.parse(localStorage.getItem("dataJualan")) || [];
 
+function setHarga() {
+    let ukuran = document.getElementById("ukuran").value;
+    
+    if (ukuran === "kecil") {
+        document.getElementById("harga").value = 9000;
+    } else if (ukuran === "besar") {
+        document.getElementById("harga").value = 15000;
+    }
+}
+
 window.onload = function() {
-    data.forEach((item, index) => {
-        renderRow(item, index);
-    });
+    data.forEach((item, index) => renderRow(item, index));
     updateTotal();
-    updateDailyReport();
+    updateDaily();
 };
 
 function tambahData() {
     let nama = document.getElementById("nama").value;
+    let ukuran = document.getElementById("ukuran").value;
     let harga = parseInt(document.getElementById("harga").value);
     let jumlah = parseInt(document.getElementById("jumlah").value);
 
-    if (!nama || isNaN(harga) || isNaN(jumlah)) {
-        alert("Isi semua data dulu bro!");
+    if (!nama || !ukuran || isNaN(harga) || isNaN(jumlah)) {
+        alert("Isi semua dulu bro!");
         return;
     }
 
@@ -98,6 +115,7 @@ function tambahData() {
 
     let item = {
         nama,
+        ukuran,
         harga,
         jumlah,
         total,
@@ -106,7 +124,6 @@ function tambahData() {
 
     data.push(item);
     localStorage.setItem("dataJualan", JSON.stringify(data));
-
     location.reload();
 }
 
@@ -115,19 +132,17 @@ function renderRow(item, index) {
     let row = tabel.insertRow();
 
     row.insertCell(0).innerText = item.nama;
-    row.insertCell(1).innerText = item.harga;
-    row.insertCell(2).innerText = item.jumlah;
-    row.insertCell(3).innerText = item.total;
+    row.insertCell(1).innerText = item.ukuran;
+    row.insertCell(2).innerText = item.harga;
+    row.insertCell(3).innerText = item.jumlah;
+    row.insertCell(4).innerText = item.total;
 
     let btn = document.createElement("button");
     btn.innerText = "Hapus";
     btn.className = "deleteBtn";
+    btn.onclick = () => hapusData(index);
 
-    btn.onclick = function() {
-        hapusData(index);
-    };
-
-    row.insertCell(4).appendChild(btn);
+    row.insertCell(5).appendChild(btn);
 }
 
 function hapusData(index) {
@@ -141,15 +156,13 @@ function updateTotal() {
     document.getElementById("grandTotal").innerText = "Total Semua: Rp " + total;
 }
 
-function updateDailyReport() {
+function updateDaily() {
     let today = new Date().toLocaleDateString();
-
-    let totalHariIni = data
+    let total = data
         .filter(item => item.tanggal === today)
         .reduce((sum, item) => sum + item.total, 0);
 
-    document.getElementById("dailyReport").innerText =
-        "Laporan Hari Ini: Rp " + totalHariIni;
+    document.getElementById("dailyReport").innerText = "Laporan Hari Ini: Rp " + total;
 }
 </script>
 
