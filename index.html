@@ -54,10 +54,23 @@ button {
 
 <h2>PENJUALAN</h2>
 
-<input type="text" id="nama" placeholder="Menu">
+<select id="menu" onchange="setHarga()">
+    <option value="">Pilih Menu</option>
+    <option value="jeruk">Es Jeruk</option>
+    <option value="alpukat">Jus Alpukat</option>
+    <option value="mangga">Jus Mangga</option>
+    <option value="stobery">Jus Stobery</option>
+    <option value="pisang">Jus Pisang</option>
+    <option value="apel">Jus Apel</option>
+    <option value="melon">Jus Melon</option>
+    <option value="semangka">Jus Semangka</option>
+    <option value="jambu">Jus Jambu</option>
+    <option value="buahnaga">Jus Buah Naga</option>
+    <option value="nanas">Jus Nanas</option>
+</select>
 
 <select id="ukuran" onchange="setHarga()">
-    <option value="">Pilih Ukuran</option>
+    <option value="">Ukuran</option>
     <option value="kecil">Kecil</option>
     <option value="besar">Besar</option>
 </select>
@@ -85,13 +98,19 @@ button {
 let data = JSON.parse(localStorage.getItem("dataJualan")) || [];
 
 function setHarga() {
+    let menu = document.getElementById("menu").value;
     let ukuran = document.getElementById("ukuran").value;
-    
-    if (ukuran === "kecil") {
-        document.getElementById("harga").value = 9000;
-    } else if (ukuran === "besar") {
-        document.getElementById("harga").value = 15000;
-    }
+    let harga = 0;
+
+    // ES JERUK
+    if (menu === "jeruk" && ukuran === "kecil") harga = 8000;
+    else if (menu === "jeruk" && ukuran === "besar") harga = 10000;
+
+    // SEMUA JUS
+    else if (menu && menu !== "jeruk" && ukuran === "kecil") harga = 9000;
+    else if (menu && menu !== "jeruk" && ukuran === "besar") harga = 15000;
+
+    document.getElementById("harga").value = harga || "";
 }
 
 window.onload = function() {
@@ -101,12 +120,14 @@ window.onload = function() {
 };
 
 function tambahData() {
-    let nama = document.getElementById("nama").value;
+    let menu = document.getElementById("menu");
     let ukuran = document.getElementById("ukuran").value;
     let harga = parseInt(document.getElementById("harga").value);
     let jumlah = parseInt(document.getElementById("jumlah").value);
 
-    if (!nama || !ukuran || isNaN(harga) || isNaN(jumlah)) {
+    let namaMenu = menu.options[menu.selectedIndex].text;
+
+    if (!menu.value || !ukuran || isNaN(harga) || isNaN(jumlah)) {
         alert("Isi semua dulu bro!");
         return;
     }
@@ -114,7 +135,7 @@ function tambahData() {
     let total = harga * jumlah;
 
     let item = {
-        nama,
+        menu: namaMenu,
         ukuran,
         harga,
         jumlah,
@@ -131,7 +152,7 @@ function renderRow(item, index) {
     let tabel = document.getElementById("tabelJualan");
     let row = tabel.insertRow();
 
-    row.insertCell(0).innerText = item.nama;
+    row.insertCell(0).innerText = item.menu;
     row.insertCell(1).innerText = item.ukuran;
     row.insertCell(2).innerText = item.harga;
     row.insertCell(3).innerText = item.jumlah;
