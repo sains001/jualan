@@ -82,6 +82,7 @@ button {
 
 <table id="tabelJualan">
 <tr>
+    <th>No</th>
     <th>Menu</th>
     <th>Ukuran</th>
     <th>Harga</th>
@@ -102,11 +103,8 @@ function setHarga() {
     let ukuran = document.getElementById("ukuran").value;
     let harga = 0;
 
-    // ES JERUK
     if (menu === "jeruk" && ukuran === "kecil") harga = 8000;
     else if (menu === "jeruk" && ukuran === "besar") harga = 10000;
-
-    // SEMUA JUS
     else if (menu && menu !== "jeruk" && ukuran === "kecil") harga = 9000;
     else if (menu && menu !== "jeruk" && ukuran === "besar") harga = 15000;
 
@@ -114,9 +112,7 @@ function setHarga() {
 }
 
 window.onload = function() {
-    data.forEach((item, index) => renderRow(item, index));
-    updateTotal();
-    updateDaily();
+    renderTable();
 };
 
 function tambahData() {
@@ -148,28 +144,47 @@ function tambahData() {
     location.reload();
 }
 
-function renderRow(item, index) {
+function renderTable() {
     let tabel = document.getElementById("tabelJualan");
-    let row = tabel.insertRow();
 
-    row.insertCell(0).innerText = item.menu;
-    row.insertCell(1).innerText = item.ukuran;
-    row.insertCell(2).innerText = item.harga;
-    row.insertCell(3).innerText = item.jumlah;
-    row.insertCell(4).innerText = item.total;
+    // reset tabel (biar nomor urut ulang)
+    tabel.innerHTML = `
+    <tr>
+        <th>No</th>
+        <th>Menu</th>
+        <th>Ukuran</th>
+        <th>Harga</th>
+        <th>Jumlah</th>
+        <th>Total</th>
+        <th>Aksi</th>
+    </tr>`;
 
-    let btn = document.createElement("button");
-    btn.innerText = "Hapus";
-    btn.className = "deleteBtn";
-    btn.onclick = () => hapusData(index);
+    data.forEach((item, index) => {
+        let row = tabel.insertRow();
 
-    row.insertCell(5).appendChild(btn);
+        row.insertCell(0).innerText = index + 1;
+        row.insertCell(1).innerText = item.menu;
+        row.insertCell(2).innerText = item.ukuran;
+        row.insertCell(3).innerText = item.harga;
+        row.insertCell(4).innerText = item.jumlah;
+        row.insertCell(5).innerText = item.total;
+
+        let btn = document.createElement("button");
+        btn.innerText = "Hapus";
+        btn.className = "deleteBtn";
+        btn.onclick = () => hapusData(index);
+
+        row.insertCell(6).appendChild(btn);
+    });
+
+    updateTotal();
+    updateDaily();
 }
 
 function hapusData(index) {
     data.splice(index, 1);
     localStorage.setItem("dataJualan", JSON.stringify(data));
-    location.reload();
+    renderTable();
 }
 
 function updateTotal() {
