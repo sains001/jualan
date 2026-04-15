@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>penjualan</title>
+<title>Kasir Pro Level System</title>
 
 <style>
 body{
@@ -31,18 +31,19 @@ body{
   text-align:left;
 }
 
-.rateBox h4{margin:5px 0;}
-
-.rateBox ul{
-  margin:0;
-  padding-left:18px;
+.badge{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:20px;
+  font-weight:bold;
+  margin:5px;
+  color:white;
 }
 
-/* warna tiap level */
-.r1{color:green;font-weight:bold;}
-.r2{color:orange;font-weight:bold;}
-.r3{color:red;font-weight:bold;}
-.r4{color:purple;font-weight:bold;}
+.bronze{background:#cd7f32;}
+.silver{background:#c0c0c0;}
+.gold{background:#ffd700;color:black;}
+.diamond{background:#6dd5ed;color:black;}
 
 table{
   width:100%;
@@ -71,9 +72,7 @@ button{
   cursor:pointer;
 }
 
-.deleteBtn{
-  background:red;
-}
+.deleteBtn{background:red;}
 </style>
 </head>
 
@@ -89,14 +88,19 @@ button{
 <h3>Total Poin: <span id="totalPoin">0</span> poin</h3>
 <h3>Nilai Poin: Rp <span id="rupiahPoin">0</span></h3>
 
-<!-- RATE BOX -->
+<!-- BADGE LEVEL -->
+<div>
+  Level: <span id="levelBadge" class="badge bronze">BRONZE</span>
+</div>
+
+<!-- RATE INFO -->
 <div class="rateBox">
-  <h4>LEVEL / POIN:</h4>
+  <h4>📊 RATE PER LEVEL POIN:</h4>
   <ul>
-    <li class="r1">0–39 poin → Rp 350 / poin</li>
-    <li class="r2">40–59 poin → Rp 500 / poin</li>
-    <li class="r3">60–79 poin → Rp 650 / poin</li>
-    <li class="r4">80-120 poin → Rp 800 / poin</li>
+    <li>0–39 poin → Rp 350 / poin</li>
+    <li>40–59 poin → Rp 500 / poin</li>
+    <li>60–79 poin → Rp 650 / poin</li>
+    <li>80–120 poin → Rp 800 / poin</li>
   </ul>
 </div>
 
@@ -163,19 +167,11 @@ const db = getDatabase(app);
 
 const harianRef = ref(db,"jualan_harian");
 
-/* JAM LIVE */
+/* JAM */
 function updateJam(){
   let now=new Date();
-  document.getElementById("jam").innerText =
-    now.toLocaleTimeString("id-ID");
-
-  document.getElementById("tanggal").innerText =
-    now.toLocaleDateString("id-ID",{
-      weekday:"long",
-      day:"numeric",
-      month:"long",
-      year:"numeric"
-    });
+  document.getElementById("jam").innerText = now.toLocaleTimeString("id-ID");
+  document.getElementById("tanggal").innerText = now.toLocaleDateString("id-ID");
 }
 setInterval(updateJam,1000);
 updateJam();
@@ -208,23 +204,34 @@ function hitungRupiahPoin(poin){
   let sisa=poin;
   let total=0;
 
-  let t1=Math.min(sisa,39);
-  total+=t1*350;
-  sisa-=t1;
-  if(sisa<=0) return total;
+  let a=Math.min(sisa,39); total+=a*350; sisa-=a;
+  let b=Math.min(sisa,20); total+=b*500; sisa-=b;
+  let c=Math.min(sisa,20); total+=c*650; sisa-=c;
+  let d=Math.min(sisa,40); total+=d*800;
 
-  let t2=Math.min(sisa,20);
-  total+=t2*500;
-  sisa-=t2;
-  if(sisa<=0) return total;
-
-  let t3=Math.min(sisa,20);
-  total+=t3*650;
-  sisa-=t3;
-  if(sisa<=0) return total;
-
-  total+=sisa*800;
   return total;
+}
+
+/* LEVEL BADGE */
+function setBadge(poin){
+  let badge=document.getElementById("levelBadge");
+
+  if(poin>=80){
+    badge.className="badge diamond";
+    badge.innerText="DIAMOND";
+  }
+  else if(poin>=60){
+    badge.className="badge gold";
+    badge.innerText="GOLD";
+  }
+  else if(poin>=40){
+    badge.className="badge silver";
+    badge.innerText="SILVER";
+  }
+  else{
+    badge.className="badge bronze";
+    badge.innerText="BRONZE";
+  }
 }
 
 /* SET HARGA */
@@ -235,7 +242,7 @@ window.setHarga=function(){
   document.getElementById("harga").value=hargaMenu[m][u];
 };
 
-/* TAMBAH DATA */
+/* TAMBAH */
 window.tambahData=function(){
   let menu=document.getElementById("menu").value;
   let ukuran=document.getElementById("ukuran").value;
@@ -279,8 +286,8 @@ onValue(harianRef,(snap)=>{
   snap.forEach(c=>{
     let d=c.val();
 
-    totalUang += d.total || 0;
-    totalPoin += d.poin || 0;
+    totalUang+=d.total||0;
+    totalPoin+=d.poin||0;
 
     let row=tabel.insertRow();
     row.insertCell(0).innerText=no++;
@@ -300,11 +307,11 @@ onValue(harianRef,(snap)=>{
     row.insertCell(8).appendChild(btn);
   });
 
-  document.getElementById("totalPendapatan").innerText = totalUang;
-  document.getElementById("totalPoin").innerText = totalPoin;
+  document.getElementById("totalPendapatan").innerText=totalUang;
+  document.getElementById("totalPoin").innerText=totalPoin;
+  document.getElementById("rupiahPoin").innerText=hitungRupiahPoin(totalPoin);
 
-  let rupiah = hitungRupiahPoin(totalPoin);
-  document.getElementById("rupiahPoin").innerText = rupiah;
+  setBadge(totalPoin);
 });
 
 </script>
