@@ -5,64 +5,45 @@
 <title>Kasir Online Firebase</title>
 
 <style>
-body {
-    font-family: Arial;
-    background: #f4f4f4;
-    padding: 20px;
-}
-
-table {
-    width: 100%;
-    background: white;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 8px;
-    border: 1px solid #ccc;
-    text-align: center;
-}
-
-th {
-    background: green;
-    color: white;
-}
-
-input, select, button {
-    padding: 8px;
-    margin: 5px;
-}
-
-button {
-    background: green;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-.deleteBtn {
-    background: red;
-}
+body {font-family:Arial;background:#f4f4f4;padding:20px;}
+table {width:100%;background:white;border-collapse:collapse;}
+th,td {border:1px solid #ccc;padding:8px;text-align:center;}
+th {background:green;color:white;}
+input,select,button{padding:8px;margin:5px;}
+button{background:green;color:white;border:none;cursor:pointer;}
+.deleteBtn{background:red;}
 </style>
 </head>
 
 <body>
 
-<h2>🔥 KASIR ONLINE FIREBASE</h2>
+<h2>🔥 KASIR JUS ONLINE</h2>
+
+<h3>Total Pendapatan: Rp <span id="totalPendapatan">0</span></h3>
 
 <select id="menu" onchange="setHarga()">
-    <option value="">Pilih Menu</option>
-    <option value="jeruk">Es Jeruk</option>
-    <option value="jus">Jus</option>
+  <option value="">Pilih Menu</option>
+
+  <option value="jeruk">Es Jeruk</option>
+
+  <option value="alpukat">Jus Alpukat</option>
+  <option value="mangga">Jus Mangga</option>
+  <option value="stroberi">Jus Stroberi</option>
+  <option value="melon">Jus Melon</option>
+  <option value="semangka">Jus Semangka</option>
+  <option value="jambu">Jus Jambu</option>
+  <option value="naga">Jus Buah Naga</option>
+  <option value="nanas">Jus Nanas</option>
+  <option value="pir">Jus Pir</option>
 </select>
 
 <select id="ukuran" onchange="setHarga()">
-    <option value="">Ukuran</option>
-    <option value="kecil">Kecil</option>
-    <option value="besar">Besar</option>
+  <option value="">Ukuran</option>
+  <option value="kecil">Kecil</option>
+  <option value="besar">Besar</option>
 </select>
 
-<input type="number" id="harga" placeholder="Harga" readonly>
+<input type="number" id="harga" readonly placeholder="Harga">
 <input type="number" id="jumlah" placeholder="Jumlah">
 
 <button onclick="tambahData()">Tambah</button>
@@ -71,20 +52,18 @@ button {
 
 <table id="tabel">
 <tr>
-    <th>No</th>
-    <th>Menu</th>
-    <th>Ukuran</th>
-    <th>Harga</th>
-    <th>Jumlah</th>
-    <th>Total</th>
-    <th>Aksi</th>
+<th>No</th>
+<th>Menu</th>
+<th>Ukuran</th>
+<th>Harga</th>
+<th>Jumlah</th>
+<th>Total</th>
+<th>Aksi</th>
 </tr>
 </table>
 
 <script type="module">
-import { initializeApp } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
 getDatabase,
 ref,
@@ -93,99 +72,108 @@ onValue,
 remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* 🔥 FIREBASE CONFIG LU */
+/* FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "AIzaSyBX6-Pw3Rst9VBIoxzN5-EXq_GoN4761kM",
-  authDomain: "penjulan-77b0d.firebaseapp.com",
-  databaseURL: "https://penjulan-77b0d-default-rtdb.firebaseio.com",
-  projectId: "penjulan-77b0d",
-  storageBucket: "penjulan-77b0d.firebasestorage.app",
-  messagingSenderId: "559953519823",
-  appId: "1:559953519823:web:334bbc0381acb54077c3ba"
+apiKey: "ISI_APIKEY",
+authDomain: "ISI_AUTHDOMAIN",
+databaseURL: "https://penjulan-77b0d-default-rtdb.firebaseio.com",
+projectId: "penjulan-77b0d",
+appId: "ISI_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const jualanRef = ref(db, "jualan");
 
-/* ===== SET HARGA ===== */
+/* 💰 HARGA */
+const hargaMenu = {
+  jeruk: { kecil: 8000, besar: 10000 },
+
+  alpukat: { kecil: 9000, besar: 15000 },
+  mangga: { kecil: 9000, besar: 15000 },
+  stroberi: { kecil: 9000, besar: 15000 },
+  melon: { kecil: 9000, besar: 15000 },
+  semangka: { kecil: 9000, besar: 15000 },
+  jambu: { kecil: 9000, besar: 15000 },
+  naga: { kecil: 9000, besar: 15000 },
+  nanas: { kecil: 9000, besar: 15000 },
+  pir: { kecil: 9000, besar: 15000 }
+};
+
+/* SET HARGA */
 window.setHarga = function () {
-    let menu = document.getElementById("menu").value;
-    let ukuran = document.getElementById("ukuran").value;
+  let menu = document.getElementById("menu").value;
+  let ukuran = document.getElementById("ukuran").value;
 
-    let harga = 0;
+  if (!menu || !ukuran) return;
 
-    if (menu === "jeruk" && ukuran === "kecil") harga = 8000;
-    else if (menu === "jeruk" && ukuran === "besar") harga = 10000;
-    else if (menu === "jus" && ukuran === "kecil") harga = 9000;
-    else if (menu === "jus" && ukuran === "besar") harga = 15000;
-
-    document.getElementById("harga").value = harga;
+  document.getElementById("harga").value = hargaMenu[menu][ukuran];
 };
 
-/* ===== TAMBAH DATA ===== */
+/* TAMBAH DATA */
 window.tambahData = function () {
-    let menu = document.getElementById("menu").value;
-    let ukuran = document.getElementById("ukuran").value;
-    let harga = Number(document.getElementById("harga").value);
-    let jumlah = Number(document.getElementById("jumlah").value);
+  let menu = document.getElementById("menu").value;
+  let ukuran = document.getElementById("ukuran").value;
+  let harga = Number(document.getElementById("harga").value);
+  let jumlah = Number(document.getElementById("jumlah").value);
 
-    if (!menu || !ukuran || !harga || !jumlah) {
-        alert("Isi semua dulu bro!");
-        return;
-    }
+  if (!menu || !ukuran || !harga || !jumlah) {
+    alert("Isi lengkap bro!");
+    return;
+  }
 
-    push(jualanRef, {
-        menu,
-        ukuran,
-        harga,
-        jumlah,
-        total: harga * jumlah,
-        waktu: new Date().toString()
-    });
+  push(jualanRef, {
+    menu,
+    ukuran,
+    harga,
+    jumlah,
+    total: harga * jumlah
+  });
 
-    document.getElementById("jumlah").value = "";
+  document.getElementById("jumlah").value = "";
 };
 
-/* ===== REALTIME ===== */
+/* REALTIME */
 const tabel = document.getElementById("tabel");
+const totalText = document.getElementById("totalPendapatan");
 
-onValue(jualanRef, (snapshot) => {
+onValue(jualanRef, (snap) => {
 
-    tabel.innerHTML = `
-    <tr>
-        <th>No</th>
-        <th>Menu</th>
-        <th>Ukuran</th>
-        <th>Harga</th>
-        <th>Jumlah</th>
-        <th>Total</th>
-        <th>Aksi</th>
-    </tr>`;
+  tabel.innerHTML = `
+  <tr>
+    <th>No</th>
+    <th>Menu</th>
+    <th>Ukuran</th>
+    <th>Harga</th>
+    <th>Jumlah</th>
+    <th>Total</th>
+    <th>Aksi</th>
+  </tr>`;
 
-    let no = 1;
+  let no = 1;
+  let total = 0;
 
-    snapshot.forEach((child) => {
-        let data = child.val();
+  snap.forEach((c) => {
+    let d = c.val();
+    total += d.total;
 
-        let row = tabel.insertRow();
-        row.insertCell(0).innerText = no++;
-        row.insertCell(1).innerText = data.menu;
-        row.insertCell(2).innerText = data.ukuran;
-        row.insertCell(3).innerText = data.harga;
-        row.insertCell(4).innerText = data.jumlah;
-        row.insertCell(5).innerText = data.total;
+    let row = tabel.insertRow();
+    row.insertCell(0).innerText = no++;
+    row.insertCell(1).innerText = d.menu;
+    row.insertCell(2).innerText = d.ukuran;
+    row.insertCell(3).innerText = d.harga;
+    row.insertCell(4).innerText = d.jumlah;
+    row.insertCell(5).innerText = d.total;
 
-        let btn = document.createElement("button");
-        btn.innerText = "Hapus";
-        btn.className = "deleteBtn";
+    let btn = document.createElement("button");
+    btn.innerText = "Hapus";
+    btn.className = "deleteBtn";
+    btn.onclick = () => remove(ref(db, "jualan/" + c.key));
 
-        btn.onclick = () => {
-            remove(ref(db, "jualan/" + child.key));
-        };
+    row.insertCell(6).appendChild(btn);
+  });
 
-        row.insertCell(6).appendChild(btn);
-    });
+  totalText.innerText = total;
 });
 
 </script>
