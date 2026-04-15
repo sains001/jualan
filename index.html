@@ -58,15 +58,13 @@ button{
 
 <body>
 
-<!-- JAM DIGITAL -->
+<!-- JAM -->
 <div id="jamBox">
   <div id="jam">00:00:00</div>
   <div id="tanggal">-</div>
 </div>
 
-<h3>Total Hari Ini: Rp <span id="totalHariIni">0</span></h3>
-<h3>Total Semua: Rp <span id="totalPendapatan">0</span></h3>
-<h3>Total Poin: <span id="totalPoin">0</span></h3>
+<h3>Total Pendapatan: Rp <span id="totalPendapatan">0</span></h3>
 <h3>Nilai Poin: Rp <span id="rupiahPoin">0</span></h3>
 
 <select id="menu" onchange="setHarga()">
@@ -131,7 +129,6 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const harianRef = ref(db,"jualan_harian");
-const totalRef = ref(db,"total_uang");
 
 /* JAM LIVE */
 function updateJam(){
@@ -227,20 +224,16 @@ window.tambahData=function(){
     waktu:getWaktu()
   });
 
-  push(totalRef,{
-    total:harga*jumlah,
-    poin:poin
-  });
-
   document.getElementById("jumlah").value="";
 };
 
-/* TABLE HARIAN */
+/* REALTIME */
 const tabel=document.getElementById("tabel");
 
 onValue(harianRef,(snap)=>{
 
-  let totalHariIni=0;
+  let totalUang=0;
+  let totalPoin=0;
 
   tabel.innerHTML=`
   <tr>
@@ -253,7 +246,9 @@ onValue(harianRef,(snap)=>{
 
   snap.forEach(c=>{
     let d=c.val();
-    totalHariIni+=d.total||0;
+
+    totalUang += d.total || 0;
+    totalPoin += d.poin || 0;
 
     let row=tabel.insertRow();
     row.insertCell(0).innerText=no++;
@@ -273,26 +268,10 @@ onValue(harianRef,(snap)=>{
     row.insertCell(8).appendChild(btn);
   });
 
-  document.getElementById("totalHariIni").innerText=totalHariIni;
-});
-
-/* TOTAL PERMANEN */
-onValue(totalRef,(snap)=>{
-
-  let totalUang=0;
-  let totalPoin=0;
-
-  snap.forEach(c=>{
-    let d=c.val();
-    totalUang+=d.total||0;
-    totalPoin+=d.poin||0;
-  });
-
-  let rupiah=hitungRupiahPoin(totalPoin);
-
   document.getElementById("totalPendapatan").innerText=totalUang;
-  document.getElementById("totalPoin").innerText=totalPoin;
-  document.getElementById("rupiahPoin").innerText=rupiah;
+
+  let rupiah = hitungRupiahPoin(totalPoin);
+  document.getElementById("rupiahPoin").innerText = rupiah;
 });
 
 </script>
