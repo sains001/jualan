@@ -65,6 +65,7 @@ button{
 </div>
 
 <h3>Total Pendapatan: Rp <span id="totalPendapatan">0</span></h3>
+<h3>Total Poin: <span id="totalPoin">0</span> poin</h3>
 <h3>Nilai Poin: Rp <span id="rupiahPoin">0</span></h3>
 
 <select id="menu" onchange="setHarga()">
@@ -116,7 +117,7 @@ onValue,
 remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* FIREBASE */
+/* FIREBASE CONFIG */
 const firebaseConfig = {
 apiKey: "ISI_APIKEY",
 authDomain: "ISI_AUTHDOMAIN",
@@ -148,7 +149,7 @@ function updateJam(){
 setInterval(updateJam,1000);
 updateJam();
 
-/* HARGA */
+/* HARGA MENU */
 const hargaMenu={
   jeruk:{kecil:8000,besar:10000},
   alpukat:{kecil:9000,besar:15000},
@@ -171,7 +172,7 @@ function hitungPoin(ukuran,jumlah){
   return (ukuran==="besar"?2:1)*jumlah;
 }
 
-/* TIER RUPIAH */
+/* TIER RUPIAH POIN */
 function hitungRupiahPoin(poin){
   let sisa=poin;
   let total=0;
@@ -203,7 +204,7 @@ window.setHarga=function(){
   document.getElementById("harga").value=hargaMenu[m][u];
 };
 
-/* TAMBAH */
+/* TAMBAH DATA */
 window.tambahData=function(){
   let menu=document.getElementById("menu").value;
   let ukuran=document.getElementById("ukuran").value;
@@ -227,7 +228,7 @@ window.tambahData=function(){
   document.getElementById("jumlah").value="";
 };
 
-/* REALTIME */
+/* REALTIME TABLE */
 const tabel=document.getElementById("tabel");
 
 onValue(harianRef,(snap)=>{
@@ -268,8 +269,13 @@ onValue(harianRef,(snap)=>{
     row.insertCell(8).appendChild(btn);
   });
 
-  document.getElementById("totalPendapatan").innerText=totalUang;
+  // 💰 TOTAL UANG
+  document.getElementById("totalPendapatan").innerText = totalUang;
 
+  // ⭐ TOTAL POIN
+  document.getElementById("totalPoin").innerText = totalPoin;
+
+  // 💵 NILAI POIN (TIER)
   let rupiah = hitungRupiahPoin(totalPoin);
   document.getElementById("rupiahPoin").innerText = rupiah;
 });
