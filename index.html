@@ -1,63 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Kasir Online Firebase</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f4f4f4;
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+    background: white;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 8px;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+
+th {
+    background: green;
+    color: white;
+}
+
+input, select, button {
+    padding: 8px;
+    margin: 5px;
+}
+
+button {
+    background: green;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.deleteBtn {
+    background: red;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🔥 KASIR ONLINE FIREBASE</h2>
+
+<select id="menu" onchange="setHarga()">
+    <option value="">Pilih Menu</option>
+    <option value="jeruk">Es Jeruk</option>
+    <option value="jus">Jus</option>
+</select>
+
+<select id="ukuran" onchange="setHarga()">
+    <option value="">Ukuran</option>
+    <option value="kecil">Kecil</option>
+    <option value="besar">Besar</option>
+</select>
+
+<input type="number" id="harga" placeholder="Harga" readonly>
+<input type="number" id="jumlah" placeholder="Jumlah">
+
+<button onclick="tambahData()">Tambah</button>
+
+<br><br>
+
+<table id="tabel">
+<tr>
+    <th>No</th>
+    <th>Menu</th>
+    <th>Ukuran</th>
+    <th>Harga</th>
+    <th>Jumlah</th>
+    <th>Total</th>
+    <th>Aksi</th>
+</tr>
+</table>
+
 <script type="module">
-window.addEventListener("DOMContentLoaded", () => {
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-  import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js").then(async (firebaseApp) => {
+import {
+getDatabase,
+ref,
+push,
+onValue,
+remove
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const { initializeApp } = firebaseApp;
-    const { getDatabase, ref, push, onValue, remove } =
-      await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+/* 🔥 FIREBASE CONFIG LU */
+const firebaseConfig = {
+  apiKey: "AIzaSyBX6-Pw3Rst9VBIoxzN5-EXq_GoN4761kM",
+  authDomain: "penjulan-77b0d.firebaseapp.com",
+  databaseURL: "https://penjulan-77b0d-default-rtdb.firebaseio.com",
+  projectId: "penjulan-77b0d",
+  storageBucket: "penjulan-77b0d.firebasestorage.app",
+  messagingSenderId: "559953519823",
+  appId: "1:559953519823:web:334bbc0381acb54077c3ba"
+};
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBX6-Pw3Rst9VBIoxzN5-EXq_GoN4761kM",
-      authDomain: "penjulan-77b0d.firebaseapp.com",
-      databaseURL: "https://penjulan-77b0d-default-rtdb.firebaseio.com",
-      projectId: "penjulan-77b0d",
-    };
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const jualanRef = ref(db, "jualan");
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const jualanRef = ref(db, "jualan");
+/* ===== SET HARGA ===== */
+window.setHarga = function () {
+    let menu = document.getElementById("menu").value;
+    let ukuran = document.getElementById("ukuran").value;
 
-    const tabel = document.getElementById("tabel");
+    let harga = 0;
 
-    if (!tabel) {
-      console.log("TABEL GAK KETEMU BRO");
-      return;
+    if (menu === "jeruk" && ukuran === "kecil") harga = 8000;
+    else if (menu === "jeruk" && ukuran === "besar") harga = 10000;
+    else if (menu === "jus" && ukuran === "kecil") harga = 9000;
+    else if (menu === "jus" && ukuran === "besar") harga = 15000;
+
+    document.getElementById("harga").value = harga;
+};
+
+/* ===== TAMBAH DATA ===== */
+window.tambahData = function () {
+    let menu = document.getElementById("menu").value;
+    let ukuran = document.getElementById("ukuran").value;
+    let harga = Number(document.getElementById("harga").value);
+    let jumlah = Number(document.getElementById("jumlah").value);
+
+    if (!menu || !ukuran || !harga || !jumlah) {
+        alert("Isi semua dulu bro!");
+        return;
     }
 
-    window.tambahData = function () {
-      let menu = document.getElementById("menu").value;
-      let ukuran = document.getElementById("ukuran").value;
-      let harga = parseInt(document.getElementById("harga").value);
-      let jumlah = parseInt(document.getElementById("jumlah").value);
-
-      if (!menu || !ukuran || !harga || !jumlah) {
-        alert("Isi dulu bro!");
-        return;
-      }
-
-      push(jualanRef, {
+    push(jualanRef, {
         menu,
         ukuran,
         harga,
         jumlah,
-        total: harga * jumlah
-      });
-    };
-
-    onValue(jualanRef, (snapshot) => {
-      tabel.innerHTML = "";
-
-      snapshot.forEach((child) => {
-        let data = child.val();
-        let row = tabel.insertRow();
-
-        row.insertCell(0).innerText = data.menu;
-        row.insertCell(1).innerText = data.total;
-      });
+        total: harga * jumlah,
+        waktu: new Date().toString()
     });
 
-  });
+    document.getElementById("jumlah").value = "";
+};
 
+/* ===== REALTIME ===== */
+const tabel = document.getElementById("tabel");
+
+onValue(jualanRef, (snapshot) => {
+
+    tabel.innerHTML = `
+    <tr>
+        <th>No</th>
+        <th>Menu</th>
+        <th>Ukuran</th>
+        <th>Harga</th>
+        <th>Jumlah</th>
+        <th>Total</th>
+        <th>Aksi</th>
+    </tr>`;
+
+    let no = 1;
+
+    snapshot.forEach((child) => {
+        let data = child.val();
+
+        let row = tabel.insertRow();
+        row.insertCell(0).innerText = no++;
+        row.insertCell(1).innerText = data.menu;
+        row.insertCell(2).innerText = data.ukuran;
+        row.insertCell(3).innerText = data.harga;
+        row.insertCell(4).innerText = data.jumlah;
+        row.insertCell(5).innerText = data.total;
+
+        let btn = document.createElement("button");
+        btn.innerText = "Hapus";
+        btn.className = "deleteBtn";
+
+        btn.onclick = () => {
+            remove(ref(db, "jualan/" + child.key));
+        };
+
+        row.insertCell(6).appendChild(btn);
+    });
 });
+
 </script>
+
+</body>
+</html>
