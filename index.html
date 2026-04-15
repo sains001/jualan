@@ -1,87 +1,72 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<title>Kasir Sandi</title>
-<style>
-body {
-    font-family: Arial;
-    background: #f4f4f4;
-    padding: 20px;
-}
-h2 { text-align: center; }
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  push,
+  onValue,
+  remove
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-table {
-    width: 100%;
-    background: white;
-    border-collapse: collapse;
-}
-th, td {
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: center;
-}
-th {
-    background: #4CAF50;
-    color: white;
-}
+// FIREBASE CONFIG LU
+const firebaseConfig = {
+  apiKey: "AIzaSyBX6-Pw3Rst9VBIoxzN5-EXq_GoN4761kM",
+  authDomain: "penjulan-77b0d.firebaseapp.com",
+  databaseURL: "https://penjulan-77b0d-default-rtdb.firebaseio.com",
+  projectId: "penjulan-77b0d",
+  storageBucket: "penjulan-77b0d.firebasestorage.app",
+  messagingSenderId: "559953519823",
+  appId: "1:559953519823:web:334bbc0381acb54077c3ba",
+  measurementId: "G-1ECT3BV5EY"
+};
 
-input, select {
-    padding: 8px;
-    margin: 5px;
-}
+// INIT FIREBASE
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const jualanRef = ref(db, "jualan");
 
-button {
-    padding: 8px 12px;
-    background: green;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
+// SET HARGA
+window.setHarga = function () {
+  let menu = document.getElementById("menu").value;
+  let ukuran = document.getElementById("ukuran").value;
+  let harga = 0;
 
-.deleteBtn {
-    background: red;
-}
+  if (menu === "jeruk" && ukuran === "kecil") harga = 8000;
+  else if (menu === "jeruk" && ukuran === "besar") harga = 10000;
+  else if (menu === "jus" && ukuran === "kecil") harga = 9000;
+  else if (menu === "jus" && ukuran === "besar") harga = 15000;
 
-#grandTotal, #dailyReport {
-    font-size: 18px;
-    margin-top: 10px;
-    font-weight: bold;
-}
-</style>
-</head>
-<body>
+  document.getElementById("harga").value = harga || "";
+};
 
-<h2>PENJUALAN</h2>
+// TAMBAH DATA
+window.tambahData = function () {
+  let menu = document.getElementById("menu").value;
+  let ukuran = document.getElementById("ukuran").value;
+  let harga = parseInt(document.getElementById("harga").value);
+  let jumlah = parseInt(document.getElementById("jumlah").value);
 
-<select id="menu" onchange="setHarga()">
-    <option value="">Pilih Menu</option>
-    <option value="jeruk">Es Jeruk</option>
-    <option value="alpukat">Jus Alpukat</option>
-    <option value="mangga">Jus Mangga</option>
-    <option value="stobery">Jus Stobery</option>
-    <option value="pisang">Jus Pisang</option>
-    <option value="apel">Jus Apel</option>
-    <option value="melon">Jus Melon</option>
-    <option value="semangka">Jus Semangka</option>
-    <option value="jambu">Jus Jambu</option>
-    <option value="buahnaga">Jus Buah Naga</option>
-    <option value="nanas">Jus Nanas</option>
-</select>
+  if (!menu || !ukuran || !harga || !jumlah) {
+    alert("Isi dulu bro!");
+    return;
+  }
 
-<select id="ukuran" onchange="setHarga()">
-    <option value="">Ukuran</option>
-    <option value="kecil">Kecil</option>
-    <option value="besar">Besar</option>
-</select>
+  push(jualanRef, {
+    menu,
+    ukuran,
+    harga,
+    jumlah,
+    total: harga * jumlah,
+    waktu: new Date().toString()
+  });
+};
 
-<input type="number" id="harga" placeholder="Harga" readonly>
-<input type="number" id="jumlah" placeholder="Jumlah">
+// REALTIME SYNC
+const tabel = document.getElementById("tabel");
 
-<button onclick="tambahData()">Tambah</button>
-
-<table id="tabelJualan">
-<tr>
+onValue(jualanRef, (snapshot) => {
+  tabel.innerHTML = `
+  <tr>
     <th>No</th>
     <th>Menu</th>
     <th>Ukuran</th>
@@ -89,118 +74,30 @@ button {
     <th>Jumlah</th>
     <th>Total</th>
     <th>Aksi</th>
-</tr>
-</table>
+  </tr>`;
 
-<div id="grandTotal">Total Semua: Rp 0</div>
-<div id="dailyReport">Laporan Hari Ini: Rp 0</div>
+  let no = 1;
 
-<script>
-let data = JSON.parse(localStorage.getItem("dataJualan")) || [];
+  snapshot.forEach((child) => {
+    let data = child.val();
 
-function setHarga() {
-    let menu = document.getElementById("menu").value;
-    let ukuran = document.getElementById("ukuran").value;
-    let harga = 0;
+    let row = tabel.insertRow();
+    row.insertCell(0).innerText = no++;
+    row.insertCell(1).innerText = data.menu;
+    row.insertCell(2).innerText = data.ukuran;
+    row.insertCell(3).innerText = data.harga;
+    row.insertCell(4).innerText = data.jumlah;
+    row.insertCell(5).innerText = data.total;
 
-    if (menu === "jeruk" && ukuran === "kecil") harga = 8000;
-    else if (menu === "jeruk" && ukuran === "besar") harga = 10000;
-    else if (menu && menu !== "jeruk" && ukuran === "kecil") harga = 9000;
-    else if (menu && menu !== "jeruk" && ukuran === "besar") harga = 15000;
+    let btn = document.createElement("button");
+    btn.innerText = "Hapus";
+    btn.className = "deleteBtn";
 
-    document.getElementById("harga").value = harga || "";
-}
-
-window.onload = function() {
-    renderTable();
-};
-
-function tambahData() {
-    let menu = document.getElementById("menu");
-    let ukuran = document.getElementById("ukuran").value;
-    let harga = parseInt(document.getElementById("harga").value);
-    let jumlah = parseInt(document.getElementById("jumlah").value);
-
-    let namaMenu = menu.options[menu.selectedIndex].text;
-
-    if (!menu.value || !ukuran || isNaN(harga) || isNaN(jumlah)) {
-        alert("Isi semua dulu bro!");
-        return;
-    }
-
-    let total = harga * jumlah;
-
-    let item = {
-        menu: namaMenu,
-        ukuran,
-        harga,
-        jumlah,
-        total,
-        tanggal: new Date().toLocaleDateString()
+    btn.onclick = () => {
+      remove(ref(db, "jualan/" + child.key));
     };
 
-    data.push(item);
-    localStorage.setItem("dataJualan", JSON.stringify(data));
-    location.reload();
-}
-
-function renderTable() {
-    let tabel = document.getElementById("tabelJualan");
-
-    // reset tabel (biar nomor urut ulang)
-    tabel.innerHTML = `
-    <tr>
-        <th>No</th>
-        <th>Menu</th>
-        <th>Ukuran</th>
-        <th>Harga</th>
-        <th>Jumlah</th>
-        <th>Total</th>
-        <th>Aksi</th>
-    </tr>`;
-
-    data.forEach((item, index) => {
-        let row = tabel.insertRow();
-
-        row.insertCell(0).innerText = index + 1;
-        row.insertCell(1).innerText = item.menu;
-        row.insertCell(2).innerText = item.ukuran;
-        row.insertCell(3).innerText = item.harga;
-        row.insertCell(4).innerText = item.jumlah;
-        row.insertCell(5).innerText = item.total;
-
-        let btn = document.createElement("button");
-        btn.innerText = "Hapus";
-        btn.className = "deleteBtn";
-        btn.onclick = () => hapusData(index);
-
-        row.insertCell(6).appendChild(btn);
-    });
-
-    updateTotal();
-    updateDaily();
-}
-
-function hapusData(index) {
-    data.splice(index, 1);
-    localStorage.setItem("dataJualan", JSON.stringify(data));
-    renderTable();
-}
-
-function updateTotal() {
-    let total = data.reduce((sum, item) => sum + item.total, 0);
-    document.getElementById("grandTotal").innerText = "Total Semua: Rp " + total;
-}
-
-function updateDaily() {
-    let today = new Date().toLocaleDateString();
-    let total = data
-        .filter(item => item.tanggal === today)
-        .reduce((sum, item) => sum + item.total, 0);
-
-    document.getElementById("dailyReport").innerText = "Laporan Hari Ini: Rp " + total;
-}
+    row.insertCell(6).appendChild(btn);
+  });
+});
 </script>
-
-</body>
-</html>
