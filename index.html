@@ -2,10 +2,15 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>penjualan</title>
+<title>Kasir Pro Tier</title>
 
 <style>
-body{font-family:Arial;background:#f4f4f4;padding:20px;text-align:center;}
+body{
+  font-family:Arial;
+  background:#f4f4f4;
+  padding:20px;
+  text-align:center;
+}
 
 #jamBox{
   background:black;
@@ -35,7 +40,8 @@ button{background:green;color:white;border:none;cursor:pointer;}
   <div id="tanggal">-</div>
 </div>
 
-<h3>Total Pendapatan: Rp <span id="totalPendapatan">0</span></h3>
+<h3>Total Hari Ini: Rp <span id="totalHariIni">0</span></h3>
+<h3>Total Semua: Rp <span id="totalPendapatan">0</span></h3>
 <h3>Total Poin: <span id="totalPoin">0</span></h3>
 <h3>Nilai Poin: Rp <span id="rupiahPoin">0</span></h3>
 
@@ -94,7 +100,7 @@ const firebaseConfig = {
 apiKey: "ISI_APIKEY",
 authDomain: "ISI_AUTHDOMAIN",
 databaseURL: "https://penjulan-77b0d-default-rtdb.firebaseio.com",
-projectId: "penjulan-77b0d",
+projectId: "ISI_PROJECT_ID",
 appId: "ISI_APP_ID"
 };
 
@@ -107,12 +113,16 @@ const totalRef = ref(db,"total_uang");
 /* JAM LIVE */
 function updateJam(){
   let now=new Date();
-
   document.getElementById("jam").innerText =
     now.toLocaleTimeString("id-ID");
 
   document.getElementById("tanggal").innerText =
-    now.toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    now.toLocaleDateString("id-ID",{
+      weekday:"long",
+      day:"numeric",
+      month:"long",
+      year:"numeric"
+    });
 }
 setInterval(updateJam,1000);
 updateJam();
@@ -135,12 +145,33 @@ function getWaktu(){
   return new Date().toLocaleString("id-ID");
 }
 
-/* RATE POIN */
-function getRate(p){
-  if(p>=80) return 800;
-  if(p>=60) return 650;
-  if(p>=40) return 500;
-  return 350;
+/* POINT */
+function hitungPoin(ukuran,jumlah){
+  return (ukuran==="besar"?2:1)*jumlah;
+}
+
+/* TIER RUPIAH POIN */
+function hitungRupiahPoin(poin){
+  let sisa=poin;
+  let total=0;
+
+  let t1=Math.min(sisa,39);
+  total+=t1*350;
+  sisa-=t1;
+  if(sisa<=0) return total;
+
+  let t2=Math.min(sisa,20);
+  total+=t2*500;
+  sisa-=t2;
+  if(sisa<=0) return total;
+
+  let t3=Math.min(sisa,20);
+  total+=t3*650;
+  sisa-=t3;
+  if(sisa<=0) return total;
+
+  total+=sisa*800;
+  return total;
 }
 
 /* SET HARGA */
@@ -163,7 +194,7 @@ window.tambahData=function(){
     return;
   }
 
-  let poin=(ukuran==="besar"?2:1)*jumlah;
+  let poin=hitungPoin(ukuran,jumlah);
 
   push(harianRef,{
     menu,ukuran,harga,jumlah,
@@ -180,7 +211,7 @@ window.tambahData=function(){
   document.getElementById("jumlah").value="";
 };
 
-/* RESET JAM 00:00 WIB */
+/* RESET HARIAN JAM 00:00 */
 function resetHarian(){
   let now=new Date();
   if(now.getHours()===0 && now.getMinutes()===0){
@@ -189,10 +220,12 @@ function resetHarian(){
 }
 setInterval(resetHarian,60000);
 
-/* REALTIME */
+/* TABLE HARIAN */
 const tabel=document.getElementById("tabel");
 
 onValue(harianRef,(snap)=>{
+
+  let totalHariIni=0;
 
   tabel.innerHTML=`
   <tr>
@@ -205,6 +238,7 @@ onValue(harianRef,(snap)=>{
 
   snap.forEach(c=>{
     let d=c.val();
+    totalHariIni+=d.total||0;
 
     let row=tabel.insertRow();
     row.insertCell(0).innerText=no++;
@@ -223,10 +257,13 @@ onValue(harianRef,(snap)=>{
 
     row.insertCell(8).appendChild(btn);
   });
+
+  document.getElementById("totalHariIni").innerText=totalHariIni;
 });
 
 /* TOTAL PERMANEN */
 onValue(totalRef,(snap)=>{
+
   let totalUang=0;
   let totalPoin=0;
 
@@ -236,8 +273,7 @@ onValue(totalRef,(snap)=>{
     totalPoin+=d.poin||0;
   });
 
-  let rate=getRate(totalPoin);
-  let rupiah=totalPoin*rate;
+  let rupiah=hitungRupiahPoin(totalPoin);
 
   document.getElementById("totalPendapatan").innerText=totalUang;
   document.getElementById("totalPoin").innerText=totalPoin;
