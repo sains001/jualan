@@ -8,7 +8,8 @@ import {
   remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// FIREBASE CONFIG LU
+window.addEventListener("load", () => {
+
 const firebaseConfig = {
   apiKey: "AIzaSyBX6-Pw3Rst9VBIoxzN5-EXq_GoN4761kM",
   authDomain: "penjulan-77b0d.firebaseapp.com",
@@ -16,30 +17,27 @@ const firebaseConfig = {
   projectId: "penjulan-77b0d",
   storageBucket: "penjulan-77b0d.firebasestorage.app",
   messagingSenderId: "559953519823",
-  appId: "1:559953519823:web:334bbc0381acb54077c3ba",
-  measurementId: "G-1ECT3BV5EY"
+  appId: "1:559953519823:web:334bbc0381acb54077c3ba"
 };
 
-// INIT FIREBASE
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const jualanRef = ref(db, "jualan");
 
-// SET HARGA
 window.setHarga = function () {
-  let menu = document.getElementById("menu").value;
-  let ukuran = document.getElementById("ukuran").value;
+  let menu = document.getElementById("menu");
+  let ukuran = document.getElementById("ukuran");
+
   let harga = 0;
 
-  if (menu === "jeruk" && ukuran === "kecil") harga = 8000;
-  else if (menu === "jeruk" && ukuran === "besar") harga = 10000;
-  else if (menu === "jus" && ukuran === "kecil") harga = 9000;
-  else if (menu === "jus" && ukuran === "besar") harga = 15000;
+  if (menu.value === "jeruk" && ukuran.value === "kecil") harga = 8000;
+  else if (menu.value === "jeruk" && ukuran.value === "besar") harga = 10000;
+  else if (menu.value === "jus" && ukuran.value === "kecil") harga = 9000;
+  else if (menu.value === "jus" && ukuran.value === "besar") harga = 15000;
 
-  document.getElementById("harga").value = harga || "";
+  document.getElementById("harga").value = harga;
 };
 
-// TAMBAH DATA
 window.tambahData = function () {
   let menu = document.getElementById("menu").value;
   let ukuran = document.getElementById("ukuran").value;
@@ -61,7 +59,6 @@ window.tambahData = function () {
   });
 };
 
-// REALTIME SYNC
 const tabel = document.getElementById("tabel");
 
 onValue(jualanRef, (snapshot) => {
@@ -91,13 +88,12 @@ onValue(jualanRef, (snapshot) => {
 
     let btn = document.createElement("button");
     btn.innerText = "Hapus";
-    btn.className = "deleteBtn";
-
-    btn.onclick = () => {
-      remove(ref(db, "jualan/" + child.key));
-    };
+    btn.onclick = () => remove(ref(db, "jualan/" + child.key));
 
     row.insertCell(6).appendChild(btn);
   });
+
 });
+
+}); 
 </script>
