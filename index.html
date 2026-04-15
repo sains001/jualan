@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>penjualan</title>
+<title>Kasir Pro Final</title>
 
 <style>
 body{
@@ -23,18 +23,42 @@ body{
 #jam{font-size:40px;font-weight:bold;}
 #tanggal{font-size:14px;}
 
-table{width:100%;background:white;border-collapse:collapse;margin-top:10px;}
-th,td{border:1px solid #ccc;padding:8px;text-align:center;}
+table{
+  width:100%;
+  background:white;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+th,td{
+  border:1px solid #ccc;
+  padding:8px;
+  text-align:center;
+}
+
 th{background:green;color:white;}
 
-input,select,button{padding:8px;margin:5px;}
-button{background:green;color:white;border:none;cursor:pointer;}
-.deleteBtn{background:red;}
+input,select,button{
+  padding:8px;
+  margin:5px;
+}
+
+button{
+  background:green;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
+.deleteBtn{
+  background:red;
+}
 </style>
 </head>
 
 <body>
 
+<!-- JAM DIGITAL -->
 <div id="jamBox">
   <div id="jam">00:00:00</div>
   <div id="tanggal">-</div>
@@ -91,8 +115,7 @@ getDatabase,
 ref,
 push,
 onValue,
-remove,
-set
+remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* FIREBASE */
@@ -113,6 +136,7 @@ const totalRef = ref(db,"total_uang");
 /* JAM LIVE */
 function updateJam(){
   let now=new Date();
+
   document.getElementById("jam").innerText =
     now.toLocaleTimeString("id-ID");
 
@@ -145,12 +169,12 @@ function getWaktu(){
   return new Date().toLocaleString("id-ID");
 }
 
-/* POINT */
+/* POIN */
 function hitungPoin(ukuran,jumlah){
   return (ukuran==="besar"?2:1)*jumlah;
 }
 
-/* TIER RUPIAH POIN */
+/* TIER RUPIAH */
 function hitungRupiahPoin(poin){
   let sisa=poin;
   let total=0;
@@ -210,15 +234,6 @@ window.tambahData=function(){
 
   document.getElementById("jumlah").value="";
 };
-
-/* RESET HARIAN JAM 00:00 */
-function resetHarian(){
-  let now=new Date();
-  if(now.getHours()===0 && now.getMinutes()===0){
-    set(ref(db,"jualan_harian"),null);
-  }
-}
-setInterval(resetHarian,60000);
 
 /* TABLE HARIAN */
 const tabel=document.getElementById("tabel");
