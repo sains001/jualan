@@ -2,45 +2,87 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>jualan</title>
+<title>Kasir Pro</title>
 
 <style>
-body {font-family:Arial;background:#f4f4f4;padding:20px;}
+body {
+  font-family: Arial;
+  background: #f4f4f4;
+  padding: 20px;
+  text-align: center;
+}
+
+/* JAM GEDE */
+#jamBox {
+  background: black;
+  color: #00ff00;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 0 20px #00ff00;
+}
+
+#jam {
+  font-size: 40px;
+  font-weight: bold;
+}
+
+#tanggal {
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+/* TABLE */
 table {width:100%;background:white;border-collapse:collapse;}
 th,td {border:1px solid #ccc;padding:8px;text-align:center;}
 th {background:green;color:white;}
-input,select,button{padding:8px;margin:5px;}
-button{background:green;color:white;border:none;cursor:pointer;}
+
+input,select,button{
+  padding:8px;
+  margin:5px;
+}
+
+button{
+  background:green;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
 .deleteBtn{background:red;}
 </style>
 </head>
 
 <body>
 
-<h2>test poin</h2>
+<!-- JAM DIGITAL -->
+<div id="jamBox">
+  <div id="jam">00:00:00</div>
+  <div id="tanggal">--</div>
+</div>
 
 <h3>Total Pendapatan: Rp <span id="totalPendapatan">0</span></h3>
 <h3>Total Poin: <span id="totalPoin">0</span></h3>
 <h3>Nilai Poin: Rp <span id="rupiahPoin">0</span></h3>
 
 <select id="menu" onchange="setHarga()">
-  <option value="">Pilih Menu</option>
-  <option value="jeruk">Es Jeruk</option>
-  <option value="alpukat">Jus Alpukat</option>
-  <option value="mangga">Jus Mangga</option>
-  <option value="stroberi">Jus Stroberi</option>
-  <option value="melon">Jus Melon</option>
-  <option value="semangka">Jus Semangka</option>
-  <option value="jambu">Jus Jambu</option>
-  <option value="naga">Jus Buah Naga</option>
-  <option value="nanas">Jus Nanas</option>
-  <option value="pir">Jus Pir</option>
+<option value="">Pilih Menu</option>
+<option value="jeruk">Es Jeruk</option>
+<option value="alpukat">Jus Alpukat</option>
+<option value="mangga">Jus Mangga</option>
+<option value="stroberi">Jus Stroberi</option>
+<option value="melon">Jus Melon</option>
+<option value="semangka">Jus Semangka</option>
+<option value="jambu">Jus Jambu</option>
+<option value="naga">Jus Buah Naga</option>
+<option value="nanas">Jus Nanas</option>
+<option value="pir">Jus Pir</option>
 </select>
 
 <select id="ukuran" onchange="setHarga()">
-  <option value="">Ukuran</option>
-  <option value="kecil">Kecil</option>
-  <option value="besar">Besar</option>
+<option value="">Ukuran</option>
+<option value="kecil">Kecil</option>
+<option value="besar">Besar</option>
 </select>
 
 <input type="number" id="harga" readonly placeholder="Harga">
@@ -67,11 +109,7 @@ button{background:green;color:white;border:none;cursor:pointer;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-getDatabase,
-ref,
-push,
-onValue,
-remove
+getDatabase, ref, push, onValue, remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* FIREBASE */
@@ -86,6 +124,25 @@ appId: "ISI_APP_ID"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const jualanRef = ref(db, "jualan");
+
+/* JAM REALTIME */
+function updateJam(){
+  let now = new Date();
+
+  let jam = now.toLocaleTimeString("id-ID");
+  let tanggal = now.toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  document.getElementById("jam").innerText = jam;
+  document.getElementById("tanggal").innerText = tanggal;
+}
+
+setInterval(updateJam, 1000);
+updateJam();
 
 /* HARGA */
 const hargaMenu = {
@@ -107,30 +164,30 @@ function getWaktu(){
 }
 
 /* SET HARGA */
-window.setHarga = function () {
+window.setHarga = function(){
   let menu = document.getElementById("menu").value;
   let ukuran = document.getElementById("ukuran").value;
-  if (!menu || !ukuran) return;
+  if(!menu || !ukuran) return;
   document.getElementById("harga").value = hargaMenu[menu][ukuran];
 };
 
 /* TAMBAH */
-window.tambahData = function () {
+window.tambahData = function(){
   let menu = document.getElementById("menu").value;
   let ukuran = document.getElementById("ukuran").value;
   let harga = Number(document.getElementById("harga").value);
   let jumlah = Number(document.getElementById("jumlah").value);
 
-  if (!menu || !ukuran || !harga || !jumlah) {
+  if(!menu || !ukuran || !harga || !jumlah){
     alert("Isi lengkap bro!");
     return;
   }
 
-  let poin = (ukuran === "besar" ? 2 : 1) * jumlah;
+  let poin = (ukuran==="besar"?2:1)*jumlah;
 
-  push(jualanRef, {
+  push(jualanRef,{
     menu, ukuran, harga, jumlah,
-    total: harga * jumlah,
+    total: harga*jumlah,
     poin,
     waktu: getWaktu()
   });
@@ -138,11 +195,11 @@ window.tambahData = function () {
   document.getElementById("jumlah").value="";
 };
 
-/* HITUNG RATE */
-function getRate(poin){
-  if(poin >= 80) return 800;
-  if(poin >= 60) return 650;
-  if(poin >= 40) return 500;
+/* RATE */
+function getRate(p){
+  if(p>=80) return 800;
+  if(p>=60) return 650;
+  if(p>=40) return 500;
   return 350;
 }
 
@@ -151,16 +208,14 @@ const tabel = document.getElementById("tabel");
 
 onValue(jualanRef,(snap)=>{
 
-  tabel.innerHTML = `
+  tabel.innerHTML=`
   <tr>
   <th>No</th><th>Menu</th><th>Ukuran</th>
   <th>Harga</th><th>Jumlah</th><th>Total</th>
   <th>Poin</th><th>Waktu</th><th>Aksi</th>
   </tr>`;
 
-  let no=1;
-  let total=0;
-  let totalPoin=0;
+  let no=1,total=0,totalPoin=0;
 
   snap.forEach((c)=>{
     let d=c.val();
@@ -185,12 +240,12 @@ onValue(jualanRef,(snap)=>{
     row.insertCell(8).appendChild(btn);
   });
 
-  let rate = getRate(totalPoin);
-  let rupiah = totalPoin * rate;
+  let rate=getRate(totalPoin);
+  let rupiah=totalPoin*rate;
 
-  document.getElementById("totalPendapatan").innerText = total;
-  document.getElementById("totalPoin").innerText = totalPoin;
-  document.getElementById("rupiahPoin").innerText = rupiah;
+  document.getElementById("totalPendapatan").innerText=total;
+  document.getElementById("totalPoin").innerText=totalPoin;
+  document.getElementById("rupiahPoin").innerText=rupiah;
 });
 </script>
 
