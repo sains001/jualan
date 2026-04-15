@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>penjualan</title>
+<title>Kasir Pro Final</title>
 
 <style>
 body{
@@ -22,6 +22,27 @@ body{
 
 #jam{font-size:40px;font-weight:bold;}
 #tanggal{font-size:14px;}
+
+.rateBox{
+  background:white;
+  padding:10px;
+  margin:10px 0;
+  border-radius:10px;
+  text-align:left;
+}
+
+.rateBox h4{margin:5px 0;}
+
+.rateBox ul{
+  margin:0;
+  padding-left:18px;
+}
+
+/* warna tiap level */
+.r1{color:green;font-weight:bold;}
+.r2{color:orange;font-weight:bold;}
+.r3{color:red;font-weight:bold;}
+.r4{color:purple;font-weight:bold;}
 
 table{
   width:100%;
@@ -67,6 +88,17 @@ button{
 <h3>Total Pendapatan: Rp <span id="totalPendapatan">0</span></h3>
 <h3>Total Poin: <span id="totalPoin">0</span> poin</h3>
 <h3>Nilai Poin: Rp <span id="rupiahPoin">0</span></h3>
+
+<!-- RATE BOX -->
+<div class="rateBox">
+  <h4>📊 RATE PER LEVEL POIN:</h4>
+  <ul>
+    <li class="r1">0–39 poin → Rp 350 / poin</li>
+    <li class="r2">40–59 poin → Rp 500 / poin</li>
+    <li class="r3">60–79 poin → Rp 650 / poin</li>
+    <li class="r4">80+ poin → Rp 800 / poin</li>
+  </ul>
+</div>
 
 <select id="menu" onchange="setHarga()">
 <option value="">Pilih Menu</option>
@@ -117,7 +149,7 @@ onValue,
 remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* FIREBASE CONFIG */
+/* FIREBASE */
 const firebaseConfig = {
 apiKey: "ISI_APIKEY",
 authDomain: "ISI_AUTHDOMAIN",
@@ -134,7 +166,6 @@ const harianRef = ref(db,"jualan_harian");
 /* JAM LIVE */
 function updateJam(){
   let now=new Date();
-
   document.getElementById("jam").innerText =
     now.toLocaleTimeString("id-ID");
 
@@ -149,7 +180,7 @@ function updateJam(){
 setInterval(updateJam,1000);
 updateJam();
 
-/* HARGA MENU */
+/* HARGA */
 const hargaMenu={
   jeruk:{kecil:8000,besar:10000},
   alpukat:{kecil:9000,besar:15000},
@@ -172,7 +203,7 @@ function hitungPoin(ukuran,jumlah){
   return (ukuran==="besar"?2:1)*jumlah;
 }
 
-/* TIER RUPIAH POIN */
+/* TIER RUPIAH */
 function hitungRupiahPoin(poin){
   let sisa=poin;
   let total=0;
@@ -228,7 +259,7 @@ window.tambahData=function(){
   document.getElementById("jumlah").value="";
 };
 
-/* REALTIME TABLE */
+/* REALTIME */
 const tabel=document.getElementById("tabel");
 
 onValue(harianRef,(snap)=>{
@@ -269,13 +300,9 @@ onValue(harianRef,(snap)=>{
     row.insertCell(8).appendChild(btn);
   });
 
-  // 💰 TOTAL UANG
   document.getElementById("totalPendapatan").innerText = totalUang;
-
-  // ⭐ TOTAL POIN
   document.getElementById("totalPoin").innerText = totalPoin;
 
-  // 💵 NILAI POIN (TIER)
   let rupiah = hitungRupiahPoin(totalPoin);
   document.getElementById("rupiahPoin").innerText = rupiah;
 });
